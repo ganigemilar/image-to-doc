@@ -5,6 +5,8 @@ A command-line tool to create Microsoft Word documents (`.docx`) from images, wi
 ## Features
 
 - 📄 **One image per page** — Each input image gets its own page
+- 📁 **Directory input** — Process all images in a folder with `--directory` / `-d`
+- 🔤 **Sort options** — Sort by name (default), date, or size with `--sort`
 - 🔒 **Lock aspect ratio** (default: `true`) — Preserves image proportions automatically
 - 📏 **Configurable dimensions** — Width/height in `cm`, `mm`, `in`, `pt`, `px`
 - 📐 **Multiple paper sizes** — A4 (default), A3, A5, Letter, Legal
@@ -25,7 +27,7 @@ java -jar target/image-to-doc-1.0.0.jar -o output.docx image1.png image2.jpg ima
 ## Usage
 
 ```bash
-image-to-doc [OPTIONS] -o <output.docx> <image-files...>
+image-to-doc [OPTIONS] -o <output.docx> [<image-files...>]
 ```
 
 ### Required
@@ -33,12 +35,14 @@ image-to-doc [OPTIONS] -o <output.docx> <image-files...>
 | Option | Description |
 |--------|-------------|
 | `-o, --output <FILE>` | Output DOCX file path |
-| `<IMAGE_FILE>...` | Input images (PNG, JPEG, BMP, GIF, TIFF) |
+| `<IMAGE_FILE>...` | Input images (PNG, JPEG, BMP, GIF, TIFF) — optional if `-d/--directory` is used |
 
 ### Optional
 
 | Option | Default | Description |
 |--------|---------|-------------|
+| `-d, --directory <DIR>` | — | Input directory containing images (processes all supported images non-recursively) |
+| `--sort <MODE>` | `name` | Sort order for directory images: `name`, `date`, `size` |
 | `-w, --width <VALUE>` | `18.6cm` | Image width (cm, mm, in, pt, px) |
 | `-h, --height <VALUE>` | `27.8cm` | Image height (cm, mm, in, pt, px) |
 | `--paper-size <SIZE>` | `A4` | Paper size: `A4`, `A3`, `A5`, `LETTER`, `LEGAL` |
