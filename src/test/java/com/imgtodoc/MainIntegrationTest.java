@@ -226,6 +226,62 @@ public class MainIntegrationTest {
     assertThat(outputFile).exists();
   }
 
+  @Test
+  void shouldSupportFitModeCover() throws Exception {
+    Path outputFile = tempDir.resolve("output.docx");
+    int exitCode = runMain("--fit-to-page", "--fit-mode", "COVER", "-o", outputFile.toString(), TEST_IMG_PNG.toString());
+
+    assertThat(exitCode).isZero();
+    assertThat(outputFile).exists();
+
+    try (XWPFDocument doc = new XWPFDocument(Files.newInputStream(outputFile))) {
+      assertThat(doc.getParagraphs()).hasSize(1);
+      assertThat(doc.getParagraphs().get(0).getRuns().get(0).getEmbeddedPictures()).hasSize(1);
+    }
+  }
+
+  @Test
+  void shouldSupportFitModeContain() throws Exception {
+    Path outputFile = tempDir.resolve("output.docx");
+    int exitCode = runMain("--fit-to-page", "--fit-mode", "CONTAIN", "-o", outputFile.toString(), TEST_IMG_PNG.toString());
+
+    assertThat(exitCode).isZero();
+    assertThat(outputFile).exists();
+
+    try (XWPFDocument doc = new XWPFDocument(Files.newInputStream(outputFile))) {
+      assertThat(doc.getParagraphs()).hasSize(1);
+      assertThat(doc.getParagraphs().get(0).getRuns().get(0).getEmbeddedPictures()).hasSize(1);
+    }
+  }
+
+  @Test
+  void shouldSupportFitModeStretch() throws Exception {
+    Path outputFile = tempDir.resolve("output.docx");
+    int exitCode = runMain("--fit-to-page", "--fit-mode", "STRETCH", "-o", outputFile.toString(), TEST_IMG_PNG.toString());
+
+    assertThat(exitCode).isZero();
+    assertThat(outputFile).exists();
+
+    try (XWPFDocument doc = new XWPFDocument(Files.newInputStream(outputFile))) {
+      assertThat(doc.getParagraphs()).hasSize(1);
+      assertThat(doc.getParagraphs().get(0).getRuns().get(0).getEmbeddedPictures()).hasSize(1);
+    }
+  }
+
+  @Test
+  void shouldDefaultToCoverModeWhenFitToPageEnabled() throws Exception {
+    Path outputFile = tempDir.resolve("output.docx");
+    int exitCode = runMain("--fit-to-page", "-o", outputFile.toString(), TEST_IMG_PNG.toString());
+
+    assertThat(exitCode).isZero();
+    assertThat(outputFile).exists();
+
+    try (XWPFDocument doc = new XWPFDocument(Files.newInputStream(outputFile))) {
+      assertThat(doc.getParagraphs()).hasSize(1);
+      assertThat(doc.getParagraphs().get(0).getRuns().get(0).getEmbeddedPictures()).hasSize(1);
+    }
+  }
+
   private int runMain(String... args) {
     return commandLine.execute(args);
   }

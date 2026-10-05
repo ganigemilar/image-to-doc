@@ -77,8 +77,12 @@ public class Main implements Callable<Integer> {
   private String margin = "1cm";
 
   @Option(names = {"--fit-to-page"}, paramLabel = "BOOL",
-      description = "Fit image to page minus margins (default: false). Image fills available space ignoring aspect ratio.")
+      description = "Fit image to page minus margins (default: false). Image fills available space using --fit-mode.")
   private boolean fitToPage = false;
+
+  @Option(names = {"--fit-mode"}, paramLabel = "MODE",
+      description = "Fit mode when --fit-to-page is enabled (default: cover). Options: cover (fill, crop), contain (fit entirely), stretch (ignore ratio)")
+  private FitMode fitMode = FitMode.COVER;
 
   public static void main(String[] args) {
     int exitCode = new CommandLine(new Main()).execute(args);
@@ -250,20 +254,56 @@ public class Main implements Callable<Integer> {
       long availableHeightTwips = pageSizeTwips[1] - 2L * marginTwips;
 
       // Convert twips to EMUs (1 twip = 635 EMU)
-      widthEmu = availableWidthTwips * 635L;
-      heightEmu = availableHeightTwips * 635L;
+      long availableWidthEmu = availableWidthTwips * 635L;
+      long availableHeightEmu = availableHeightTwips * 635L;
+
+      double imageAspectRatio = (double) image.getWidth() / image.getHeight();
+      double targetAspectRatio = (double) availableWidthEmu / availableHeightEmu;
+
+      switch (fitMode) {
+        case COVER:
+          // Fill available space, crop excess - scale so image covers entire area
+          if (imageAspectRatio > targetAspectRatio) {
+            // Image is wider than target - scale to height, crop width
+            widthEmu = Math.round(availableHeightEmu * imageAspectRatio);
+            heightEmu = availableHeightEmu;
+          } else {
+            // Image is taller than target - scale to width, crop height
+            widthEmu = availableWidthEmu;
+            heightEmu = Math.round(availableWidthEmu / imageAspectRatio);
+          }
+          break;
+        case CONTAIN:
+          // Fit entirely within space - scale so image fits completely
+          if (imageAspectRatio > targetAspectRatio) {
+            // Image is wider - scale to width, fit height
+            widthEmu = availableWidthEmu;
+            heightEmu = Math.round(availableWidthEmu / imageAspectRatio);
+          } else {
+            // Image is taller - scale to height, fit width
+            widthEmu = Math.round(availableHeightEmu * imageAspectRatio);
+            heightEmu = availableHeightEmu;
+          }
+          break;
+        case STRETCH:
+        default:
+          // Stretch to fill exactly (ignore aspect ratio)
+          widthEmu = availableWidthEmu;
+          heightEmu = availableHeightEmu;
+          break;
+      }
     } else {
       widthEmu = parseLengthToEmu(width);
       heightEmu = parseLengthToEmu(height);
-    }
 
-    if (!fitToPage && lockAspectRatio) {
-      double imageAspectRatio = (double) image.getWidth() / image.getHeight();
-      double targetAspectRatio = (double) widthEmu / heightEmu;
-      if (imageAspectRatio > targetAspectRatio) {
-        heightEmu = Math.round(widthEmu / imageAspectRatio);
-      } else {
-        widthEmu = Math.round(heightEmu * imageAspectRatio);
+      if (lockAspectRatio) {
+        double imageAspectRatio = (double) image.getWidth() / image.getHeight();
+        double targetAspectRatio = (double) widthEmu / heightEmu;
+        if (imageAspectRatio > targetAspectRatio) {
+          heightEmu = Math.round(widthEmu / imageAspectRatio);
+        } else {
+          widthEmu = Math.round(heightEmu * imageAspectRatio);
+        }
       }
     }
 
@@ -371,5 +411,11 @@ public class Main implements Callable<Integer> {
 
   enum SortOrder {
     NAME, DATE, SIZE
+  }
+
+  enum FitMode {
+    COVER,    // Fill available space, crop excess (maintains aspect ratio)
+    CONTAIN,  // Fit entirely within space (maintains aspect ratio, may have empty space)
+    STRETCH   // Fill exactly, ignore aspect ratio (current behavior)
   }
 }
