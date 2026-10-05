@@ -1,9 +1,9 @@
 package com.imgtodoc;
 
-import org.apache.poi.xwpf.usermodel.*;
-import org.openxmlformats.schemas.drawingml.x2006.main.*;
-import org.openxmlformats.schemas.drawingml.x2006.picture.CTPicture;
-import org.openxmlformats.schemas.drawingml.x2006.wordprocessingDrawing.CTInline;
+import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPageSz;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSectPr;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STPageOrientation;
@@ -19,9 +19,12 @@ import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 @Command(
     name = "image-to-doc",

@@ -18,40 +18,19 @@
   </properties>
 
   <dependencies>
-    <!-- Picocli for command line parsing -->
     <dependency>
       <groupId>info.picocli</groupId>
       <artifactId>picocli</artifactId>
       <version>${picocli.version}</version>
     </dependency>
 
-    <!-- Apache POI for DOCX manipulation -->
     <dependency>
       <groupId>org.apache.poi</groupId>
       <artifactId>poi-ooxml</artifactId>
       <version>${poi.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.apache.poi</groupId>
-      <artifactId>poi-ooxml-lite</artifactId>
-      <version>${poi.version}</version>
-    </dependency>
 
-    <!-- For image handling -->
-    <dependency>
-      <groupId>org.apache.poi</groupId>
-      <artifactId>poi-scratchpad</artifactId>
-      <version>${poi.version}</version>
-    </dependency>
-
-    <!-- OOXML schemas for low-level XML manipulation -->
-    <dependency>
-      <groupId>org.apache.poi</groupId>
-      <artifactId>ooxml-schemas</artifactId>
-      <version>${ooxml-schemas.version}</version>
-    </dependency>
-
-    <!-- Test dependencies -->
+    <!-- test dependencies -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
@@ -68,12 +47,6 @@
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
       <version>3.24.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.poi</groupId>
-      <artifactId>poi-ooxml</artifactId>
-      <version>${poi.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
