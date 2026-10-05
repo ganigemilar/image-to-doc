@@ -32,7 +32,7 @@ public class MainIntegrationTest {
   }
 
   @Test
-  void shouldConvertSinglePngToDocx(@TempDir Path tempDir) throws Exception {
+  void shouldConvertSinglePngToDocx() throws Exception {
     Path outputFile = tempDir.resolve("output.docx");
     int exitCode = runMain("-o", outputFile.toString(), TEST_IMG_PNG.toString());
 
@@ -55,7 +55,7 @@ public class MainIntegrationTest {
   }
 
   @Test
-  void shouldConvertSingleJpgToDocx(@TempDir Path tempDir) throws Exception {
+  void shouldConvertSingleJpgToDocx() throws Exception {
     Path outputFile = tempDir.resolve("output.docx");
     int exitCode = runMain("-o", outputFile.toString(), TEST_IMG_JPG.toString());
 
@@ -70,7 +70,7 @@ public class MainIntegrationTest {
   }
 
   @Test
-  void shouldConvertMultipleImagesToDocx(@TempDir Path tempDir) throws Exception {
+  void shouldConvertMultipleImagesToDocx() throws Exception {
     Path outputFile = tempDir.resolve("output.docx");
     int exitCode = runMain("-o", outputFile.toString(), TEST_IMG_PNG.toString(), TEST_IMG_JPG.toString());
 
@@ -90,7 +90,7 @@ public class MainIntegrationTest {
   }
 
   @Test
-  void shouldConvertDirectoryOfImages(@TempDir Path tempDir) throws Exception {
+  void shouldConvertDirectoryOfImages() throws Exception {
     Path outputFile = tempDir.resolve("output.docx");
     int exitCode = runMain("-d", SAMPLE_DIR.toString(), "-o", outputFile.toString());
 
@@ -104,7 +104,7 @@ public class MainIntegrationTest {
   }
 
   @Test
-  void shouldConvertDirectoryWithSortByName(@TempDir Path tempDir) throws Exception {
+  void shouldConvertDirectoryWithSortByName() throws Exception {
     Path outputFile = tempDir.resolve("output.docx");
     int exitCode = runMain("-d", SAMPLE_DIR.toString(), "-o", outputFile.toString(), "--sort", "NAME");
 
@@ -116,7 +116,7 @@ public class MainIntegrationTest {
   }
 
   @Test
-  void shouldConvertDirectoryWithSortBySize(@TempDir Path tempDir) throws Exception {
+  void shouldConvertDirectoryWithSortBySize() throws Exception {
     Path outputFile = tempDir.resolve("output.docx");
     int exitCode = runMain("-d", SAMPLE_DIR.toString(), "-o", outputFile.toString(), "--sort", "SIZE");
 
@@ -128,7 +128,7 @@ public class MainIntegrationTest {
   }
 
   @Test
-  void shouldConvertDirectoryWithSortByDate(@TempDir Path tempDir) throws Exception {
+  void shouldConvertDirectoryWithSortByDate() throws Exception {
     Path outputFile = tempDir.resolve("output.docx");
     int exitCode = runMain("-d", SAMPLE_DIR.toString(), "-o", outputFile.toString(), "--sort", "DATE");
 
@@ -140,7 +140,7 @@ public class MainIntegrationTest {
   }
 
   @Test
-  void shouldCombineDirectoryAndIndividualFiles(@TempDir Path tempDir) throws Exception {
+  void shouldCombineDirectoryAndIndividualFiles() throws Exception {
     Path outputFile = tempDir.resolve("output.docx");
     int exitCode = runMain("-d", SAMPLE_DIR.toString(), "-o", outputFile.toString(), TEST_IMG_PNG.toString());
 
@@ -163,7 +163,7 @@ public class MainIntegrationTest {
   }
 
   @Test
-  void shouldFailWhenNoInputProvided(@TempDir Path tempDir) {
+  void shouldFailWhenNoInputProvided() {
     Path outputFile = tempDir.resolve("output.docx");
     int exitCode = runMain("-o", outputFile.toString());
 
@@ -178,7 +178,7 @@ public class MainIntegrationTest {
   }
 
   @Test
-  void shouldFailWhenInputDirectoryNotExists(@TempDir Path tempDir) {
+  void shouldFailWhenInputDirectoryNotExists() {
     Path outputFile = tempDir.resolve("output.docx");
     int exitCode = runMain("-d", "/nonexistent/dir", "-o", outputFile.toString());
 
@@ -186,7 +186,7 @@ public class MainIntegrationTest {
   }
 
   @Test
-  void shouldFailWhenInputFileNotExists(@TempDir Path tempDir) {
+  void shouldFailWhenInputFileNotExists() {
     Path outputFile = tempDir.resolve("output.docx");
     int exitCode = runMain("-o", outputFile.toString(), "/nonexistent/image.png");
 
@@ -194,7 +194,7 @@ public class MainIntegrationTest {
   }
 
   @Test
-  void shouldSupportCustomWidthAndHeight(@TempDir Path tempDir) throws Exception {
+  void shouldSupportCustomWidthAndHeight() throws Exception {
     Path outputFile = tempDir.resolve("output.docx");
     int exitCode = runMain("-w", "10cm", "-h", "15cm", "-o", outputFile.toString(), TEST_IMG_PNG.toString());
 
@@ -203,7 +203,7 @@ public class MainIntegrationTest {
   }
 
   @Test
-  void shouldSupportNoPageBreakAfterLast(@TempDir Path tempDir) throws Exception {
+  void shouldSupportNoPageBreakAfterLast() throws Exception {
     Path outputFile = tempDir.resolve("output.docx");
     int exitCode = runMain("--no-page-break", "-o", outputFile.toString(), TEST_IMG_PNG.toString(), TEST_IMG_JPG.toString());
 
@@ -218,7 +218,7 @@ public class MainIntegrationTest {
   }
 
   @Test
-  void shouldSupportCustomMargin(@TempDir Path tempDir) throws Exception {
+  void shouldSupportCustomMargin() throws Exception {
     Path outputFile = tempDir.resolve("output.docx");
     int exitCode = runMain("--margin", "2cm", "-o", outputFile.toString(), TEST_IMG_PNG.toString());
 
