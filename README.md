@@ -7,6 +7,7 @@ A command-line tool to create Microsoft Word documents (`.docx`) from images, wi
 - 📄 **One image per page** — Each input image gets its own page
 - 📁 **Directory input** — Process all images in a folder with `--directory` / `-d`
 - 🔤 **Sort options** — Sort by name (default), date, or size with `--sort`
+- 📐 **Fit to page** — Auto-size images to fill page minus margins with `--fit-to-page`
 - 🔒 **Lock aspect ratio** (default: `true`) — Preserves image proportions automatically
 - 📏 **Configurable dimensions** — Width/height in `cm`, `mm`, `in`, `pt`, `px`
 - 📐 **Multiple paper sizes** — A4 (default), A3, A5, Letter, Legal
@@ -43,6 +44,7 @@ image-to-doc [OPTIONS] -o <output.docx> [<image-files...>]
 |--------|---------|-------------|
 | `-d, --directory <DIR>` | — | Input directory containing images (processes all supported images non-recursively) |
 | `--sort <MODE>` | `name` | Sort order for directory images: `name`, `date`, `size` |
+| `--fit-to-page <BOOL>` | `false` | Fit image to page minus margins (ignores aspect ratio) |
 | `-w, --width <VALUE>` | `18.6cm` | Image width (cm, mm, in, pt, px) |
 | `-h, --height <VALUE>` | `27.8cm` | Image height (cm, mm, in, pt, px) |
 | `--paper-size <SIZE>` | `A4` | Paper size: `A4`, `A3`, `A5`, `LETTER`, `LEGAL` |
@@ -91,6 +93,17 @@ java -jar image-to-doc-1.0.0.jar -o output.docx \
 java -jar image-to-doc-1.0.0.jar -o output.docx \
   --no-page-break \
   page1.png page2.png page3.png
+
+# Fit images to page minus margins (auto-size)
+java -jar image-to-doc-1.0.0.jar -o output.docx \
+  --fit-to-page \
+  --margin 1cm \
+  image1.png image2.jpg
+
+# Fit with directory input
+java -jar image-to-doc-1.0.0.jar -o output.docx \
+  --fit-to-page \
+  -d ./photos
 ```
 
 ## Output Structure
