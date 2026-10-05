@@ -76,6 +76,10 @@ public class Main implements Callable<Integer> {
       description = "Page margin (default: 1cm). Supports cm, mm, in, pt (e.g., 1cm, 10mm, 0.4in)")
   private String margin = "1cm";
 
+  @Option(names = {"--fit-to-page"}, paramLabel = "BOOL",
+      description = "Fit image to page minus margins (default: false). Image fills available space ignoring aspect ratio.")
+  private boolean fitToPage = false;
+
   public static void main(String[] args) {
     int exitCode = new CommandLine(new Main()).execute(args);
     System.exit(exitCode);
@@ -235,10 +239,25 @@ public class Main implements Callable<Integer> {
       throw new IOException("Cannot read image: " + imagePath);
     }
 
-    long widthEmu = parseLengthToEmu(width);
-    long heightEmu = parseLengthToEmu(height);
+    long widthEmu;
+    long heightEmu;
 
-    if (lockAspectRatio) {
+    if (fitToPage) {
+      // Calculate available space: paper size - margins (left+right, top+bottom)
+      long[] pageSizeTwips = getPaperSizeTwips();
+      int marginTwips = parseLengthToTwips(margin);
+      long availableWidthTwips = pageSizeTwips[0] - 2L * marginTwips;
+      long availableHeightTwips = pageSizeTwips[1] - 2L * marginTwips;
+
+      // Convert twips to EMUs (1 twip = 635 EMU)
+      widthEmu = availableWidthTwips * 635L;
+      heightEmu = availableHeightTwips * 635L;
+    } else {
+      widthEmu = parseLengthToEmu(width);
+      heightEmu = parseLengthToEmu(height);
+    }
+
+    if (!fitToPage && lockAspectRatio) {
       double imageAspectRatio = (double) image.getWidth() / image.getHeight();
       double targetAspectRatio = (double) widthEmu / heightEmu;
       if (imageAspectRatio > targetAspectRatio) {
@@ -327,6 +346,22 @@ public class Main implements Callable<Integer> {
       // Assume cm if no unit specified
       number = Double.parseDouble(value);
       return (int) Math.round(number * 567);
+    }
+  }
+
+  private long[] getPaperSizeTwips() {
+    switch (paperSize) {
+      case A3:
+        return new long[]{16838, 23811};
+      case A5:
+        return new long[]{8391, 11906};
+      case LETTER:
+        return new long[]{12240, 15840};
+      case LEGAL:
+        return new long[]{12240, 20160};
+      case A4:
+      default:
+        return new long[]{11906, 16838};
     }
   }
 
