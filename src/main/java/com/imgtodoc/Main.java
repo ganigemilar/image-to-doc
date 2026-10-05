@@ -19,7 +19,8 @@ import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.concurrent.Callable;
 
 @Command(
@@ -32,9 +33,13 @@ import java.util.concurrent.Callable;
 )
 public class Main implements Callable<Integer> {
 
-  @Parameters(index = "0..*", arity = "1..*", paramLabel = "IMAGE_FILE",
+  @Parameters(index = "0..*", arity = "0..*", paramLabel = "IMAGE_FILE",
       description = "Input image files (supported formats: PNG, JPEG, BMP, GIF, TIFF)")
-  private List<String> imageFiles;
+  private List<String> imageFiles = new ArrayList<>();
+
+  @Option(names = {"-d", "--directory"}, paramLabel = "DIR",
+      description = "Input directory containing images. Processes all supported images in the directory (non-recursive).")
+  private File inputDirectory;
 
   @Option(names = {"-o", "--output"}, required = true, paramLabel = "FILE",
       description = "Output DOCX file path")
@@ -56,6 +61,10 @@ public class Main implements Callable<Integer> {
       description = "Lock aspect ratio (default: true)")
   private boolean lockAspectRatio = true;
 
+  @Option(names = {"--sort"}, paramLabel = "MODE",
+      description = "Sort order for directory images (default: name). Options: name, date, size")
+  private SortOrder sortOrder = SortOrder.NAME;
+
   @Option(names = {"--no-page-break"}, paramLabel = "BOOL",
       description = "Don't add page break after last image (default: false)")
   private boolean noPageBreakAfterLast = false;
@@ -73,11 +82,21 @@ public class Main implements Callable<Integer> {
   public Integer call() throws Exception {
     validateInputs();
 
+    List<String> allImageFiles = new ArrayList<>();
+    if (inputDirectory != null) {
+      allImageFiles.addAll(getImageFilesFromDirectory(inputDirectory));
+    }
+    allImageFiles.addAll(imageFiles);
+
+    if (allImageFiles.isEmpty()) {
+      throw new IllegalArgumentException("No image files found. Provide image files or a directory with images.");
+    }
+
     try (XWPFDocument document = new XWPFDocument()) {
       configurePageSetup(document);
 
-      for (int i = 0; i < imageFiles.size(); i++) {
-        addImageToPage(document, imageFiles.get(i), i);
+      for (int i = 0; i < allImageFiles.size(); i++) {
+        addImageToPage(document, allImageFiles.get(i), i);
       }
 
       try (FileOutputStream fos = new FileOutputStream(outputFile)) {
@@ -85,14 +104,23 @@ public class Main implements Callable<Integer> {
       }
 
       System.out.println("Successfully created: " + outputFile.getAbsolutePath());
-      System.out.println("Pages: " + imageFiles.size());
+      System.out.println("Pages: " + allImageFiles.size());
       return 0;
     }
   }
 
   private void validateInputs() throws Exception {
-    if (imageFiles.isEmpty()) {
-      throw new IllegalArgumentException("At least one image file must be provided");
+    if (imageFiles.isEmpty() && inputDirectory == null) {
+      throw new IllegalArgumentException("At least one image file or a directory (--directory) must be provided");
+    }
+
+    if (inputDirectory != null) {
+      if (!inputDirectory.exists()) {
+        throw new FileNotFoundException("Input directory not found: " + inputDirectory);
+      }
+      if (!inputDirectory.isDirectory()) {
+        throw new IllegalArgumentException("Not a directory: " + inputDirectory);
+      }
     }
 
     for (String imageFile : imageFiles) {
@@ -112,6 +140,33 @@ public class Main implements Callable<Integer> {
         throw new IOException("Cannot create output directory: " + parentDir);
       }
     }
+  }
+
+  private List<String> getImageFilesFromDirectory(File directory) {
+    File[] files = directory.listFiles((dir, name) -> {
+      String lower = name.toLowerCase();
+      return lower.endsWith(".png") || lower.endsWith(".jpg") || lower.endsWith(".jpeg")
+          || lower.endsWith(".bmp") || lower.endsWith(".gif") || lower.endsWith(".tiff") || lower.endsWith(".tif");
+    });
+
+    if (files == null || files.length == 0) {
+      return List.of();
+    }
+
+    List<File> fileList = Arrays.asList(files);
+    switch (sortOrder) {
+      case NAME:
+        fileList.sort(Comparator.comparing(File::getName));
+        break;
+      case DATE:
+        fileList.sort(Comparator.comparingLong(File::lastModified));
+        break;
+      case SIZE:
+        fileList.sort(Comparator.comparingLong(File::length));
+        break;
+    }
+
+    return fileList.stream().map(File::getAbsolutePath).collect(Collectors.toList());
   }
 
   private void configurePageSetup(XWPFDocument document) {
@@ -274,5 +329,9 @@ public class Main implements Callable<Integer> {
 
   enum PaperSize {
     A4, A3, A5, LETTER, LEGAL
+  }
+
+  enum SortOrder {
+    NAME, DATE, SIZE
   }
 }
