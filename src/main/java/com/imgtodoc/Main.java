@@ -90,6 +90,24 @@ public class Main implements Callable<Integer> {
       description = "Auto-rotate landscape images 90 degrees clockwise (default: false). Rotates images where width > height.")
   private boolean autoOrient = false;
 
+  private static final Comparator<String> NATURAL_ORDER = (a, b) -> {
+    int i = 0, j = 0;
+    while (i < a.length() && j < b.length()) {
+      char ca = a.charAt(i), cb = b.charAt(j);
+      if (Character.isDigit(ca) && Character.isDigit(cb)) {
+        int numA = 0, numB = 0;
+        while (i < a.length() && Character.isDigit(a.charAt(i))) numA = numA * 10 + (a.charAt(i++) - '0');
+        while (j < b.length() && Character.isDigit(b.charAt(j))) numB = numB * 10 + (b.charAt(j++) - '0');
+        if (numA != numB) return Integer.compare(numA, numB);
+      } else {
+        int cmp = Character.toLowerCase(ca) - Character.toLowerCase(cb);
+        if (cmp != 0) return cmp;
+        i++; j++;
+      }
+    }
+    return Integer.compare(a.length(), b.length());
+  };
+
   public static void main(String[] args) {
     int exitCode = new CommandLine(new Main()).execute(args);
     System.exit(exitCode);
@@ -173,7 +191,7 @@ public class Main implements Callable<Integer> {
     List<File> fileList = Arrays.asList(files);
     switch (sortOrder) {
       case NAME:
-        fileList.sort(Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER));
+        fileList.sort(Comparator.comparing(File::getName, NATURAL_ORDER));
         break;
       case DATE:
         fileList.sort(Comparator.comparingLong(File::lastModified));
