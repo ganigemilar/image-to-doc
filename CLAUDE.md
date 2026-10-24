@@ -16,7 +16,7 @@ mvn clean package          # Build executable JAR (output: target/image-to-doc-1
 
 ### Test
 ```bash
-mvn test                   # Run all tests (24 integration tests)
+mvn test                   # Run all tests (28 integration tests)
 mvn test -Dtest=MainIntegrationTest#shouldConvertSinglePngToDocx  # Run single test
 ```
 
@@ -41,9 +41,9 @@ The entire application is in **`src/main/java/com/imgtodoc/Main.java`** - a sing
 
 ### Key Components
 
-1. **CLI Options** (lines 39-85): All options defined via Picocli annotations
+1. **CLI Options** (lines 39-89): All options defined via Picocli annotations
    - `@Parameters`: Positional image file arguments
-   - `@Option`: Named options (`-o`, `-d`, `--width`, `--height`, `--paper-size`, `--fit-to-page`, `--fit-mode`, etc.)
+   - `@Option`: Named options (`-o`, `-d`, `--width`, `--height`, `--paper-size`, `--fit-to-page`, `--fit-mode`, `--auto-orient`, etc.)
 
 2. **Entry Point** (lines 87-121): `call()` method orchestrates the workflow
    - Validates inputs
@@ -54,12 +54,14 @@ The entire application is in **`src/main/java/com/imgtodoc/Main.java`** - a sing
 
 3. **Page Setup** (lines 183-237): Configures document paper size (A4/A3/A5/Letter/Legal) and margins using OOXML low-level APIs (CTSectPr, CTPageSz)
 
-4. **Image Processing** (lines 239-323): `addImageToPage()` handles:
+4. **Image Processing** (lines 239-333): `addImageToPage()` handles:
    - Reading image via ImageIO
+   - **Auto-orient** (lines 250-254): Rotate landscape images 90° clockwise when `--auto-orient` enabled (width > height)
    - Calculating dimensions in EMUs (1/914400 inch)
    - **Fit modes**: COVER (fill, crop), CONTAIN (fit entirely), STRETCH (ignore ratio)
    - Aspect ratio locking when not using fit-to-page
    - Adding centered image to paragraph with page break
+   - **Rotated image handling**: Writes rotated BufferedImage to memory buffer (ByteArrayOutputStream) for DOCX embedding; source file unchanged
 
 5. **Unit Parsing** (lines 339-390): `parseLengthToEmu()` and `parseLengthToTwips()` handle cm, mm, in, pt, px units
 
@@ -136,4 +138,4 @@ Located in `src/test/sample/`:
 - Remote: `https://github.com/ganigemilar/image-to-doc.git`
 
 ## .gitignore
-Excludes: `target/`, `.idea/`, `dependency-reduced-pom.xml`, IDE files
+Excludes: `target/`, `output/`, `.idea/`, `dependency-reduced-pom.xml`, IDE files
