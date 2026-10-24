@@ -9,6 +9,7 @@ A command-line tool to create Microsoft Word documents (`.docx`) from images, wi
 - 🔤 **Sort options** — Sort by name (default), date, or size with `--sort`
 - 📐 **Fit to page** — Auto-size images to fill page minus margins with `--fit-to-page`
 - 🎯 **Fit modes** — Cover (fill, crop), Contain (fit entirely), Stretch (ignore ratio) with `--fit-mode`
+- 🔄 **Auto-orient** — Rotate landscape images 90° clockwise with `--auto-orient` (default: off)
 - 🔒 **Lock aspect ratio** (default: `true`) — Preserves image proportions automatically
 - 📏 **Configurable dimensions** — Width/height in `cm`, `mm`, `in`, `pt`, `px`
 - 📐 **Multiple paper sizes** — A4 (default), A3, A5, Letter, Legal
@@ -47,6 +48,7 @@ image-to-doc [OPTIONS] -o <output.docx> [<image-files...>]
 | `--sort <MODE>` | `name` | Sort order for directory images: `name`, `date`, `size` |
 | `--fit-to-page <BOOL>` | `false` | Fit image to page minus margins (uses `--fit-mode`) |
 | `--fit-mode <MODE>` | `cover` | Fit mode when `--fit-to-page` enabled: `cover` (fill, crop), `contain` (fit entirely), `stretch` (ignore ratio) |
+| `--auto-orient <BOOL>` | `false` | Auto-rotate landscape images 90° clockwise (width > height) |
 | `-w, --width <VALUE>` | `18.6cm` | Image width (cm, mm, in, pt, px) |
 | `-h, --height <VALUE>` | `27.8cm` | Image height (cm, mm, in, pt, px) |
 | `--paper-size <SIZE>` | `A4` | Paper size: `A4`, `A3`, `A5`, `LETTER`, `LEGAL` |
@@ -119,6 +121,17 @@ java -jar image-to-doc-1.0.0.jar -o output.docx \
   --fit-to-page \
   --fit-mode stretch \
   image.png
+
+# Auto-orient landscape images (rotate 90° clockwise)
+java -jar image-to-doc-1.0.0.jar -o output.docx \
+  --auto-orient \
+  landscape.jpg portrait.png
+
+# Auto-orient with fit-to-page
+java -jar image-to-doc-1.0.0.jar -o output.docx \
+  --auto-orient \
+  --fit-to-page \
+  -d ./photos
 ```
 
 ## Output Structure

@@ -13,6 +13,8 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.math.BigInteger;
@@ -83,6 +85,10 @@ public class Main implements Callable<Integer> {
   @Option(names = {"--fit-mode"}, paramLabel = "MODE",
       description = "Fit mode when --fit-to-page is enabled (default: cover). Options: cover (fill, crop), contain (fit entirely), stretch (ignore ratio)")
   private FitMode fitMode = FitMode.COVER;
+
+  @Option(names = {"--auto-orient"}, paramLabel = "BOOL",
+      description = "Auto-rotate landscape images 90 degrees clockwise (default: false). Rotates images where width > height.")
+  private boolean autoOrient = false;
 
   public static void main(String[] args) {
     int exitCode = new CommandLine(new Main()).execute(args);
@@ -238,9 +244,15 @@ public class Main implements Callable<Integer> {
 
   private void addImageToPage(XWPFDocument document, String imagePath, int index) throws Exception {
     File file = new File(imagePath);
-    BufferedImage image = ImageIO.read(file);
-    if (image == null) {
+    BufferedImage originalImage = ImageIO.read(file);
+    if (originalImage == null) {
       throw new IOException("Cannot read image: " + imagePath);
+    }
+
+    // Handle auto-orientation: rotate 90 degrees clockwise if landscape
+    BufferedImage image = originalImage;
+    if (autoOrient && originalImage.getWidth() > originalImage.getHeight()) {
+      image = rotateImage90Degrees(originalImage);
     }
 
     long widthEmu;
@@ -316,9 +328,13 @@ public class Main implements Callable<Integer> {
     }
 
     XWPFRun run = paragraph.createRun();
-    try (InputStream is = new FileInputStream(file)) {
-      run.addPicture(is, getPOIImageType(imagePath), file.getName(),
-          (int) widthEmu, (int) heightEmu);
+    try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+      String format = imagePath.toLowerCase().endsWith(".png") ? "png" : "jpg";
+      ImageIO.write(image, format, baos);
+      try (InputStream is = new ByteArrayInputStream(baos.toByteArray())) {
+        run.addPicture(is, getPOIImageType(imagePath), file.getName(),
+            (int) widthEmu, (int) heightEmu);
+      }
     }
   }
 
@@ -330,6 +346,27 @@ public class Main implements Callable<Integer> {
     if (lower.endsWith(".gif")) return XWPFDocument.PICTURE_TYPE_GIF;
     if (lower.endsWith(".tiff") || lower.endsWith(".tif")) return XWPFDocument.PICTURE_TYPE_TIFF;
     return XWPFDocument.PICTURE_TYPE_PNG; // default
+  }
+
+  /**
+   * Rotate a BufferedImage 90 degrees clockwise.
+   */
+  private BufferedImage rotateImage90Degrees(BufferedImage image) {
+    int width = image.getWidth();
+    int height = image.getHeight();
+
+    int type = image.getType() == BufferedImage.TYPE_CUSTOM
+        ? BufferedImage.TYPE_INT_ARGB
+        : image.getType();
+
+    BufferedImage rotated = new BufferedImage(height, width, type);
+    Graphics2D g = rotated.createGraphics();
+    AffineTransform at = new AffineTransform();
+    at.translate(height, 0);          // shift after rotation
+    at.rotate(Math.toRadians(90));    // 90° clockwise
+    g.drawImage(image, at, null);
+    g.dispose();
+    return rotated;
   }
 
   /**

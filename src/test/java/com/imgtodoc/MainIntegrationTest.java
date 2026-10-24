@@ -282,6 +282,66 @@ public class MainIntegrationTest {
     }
   }
 
+  @Test
+  void shouldAutoOrientLandscapeImage() throws Exception {
+    Path outputFile = tempDir.resolve("output.docx");
+    // test_img2.jpg is landscape (width > height)
+    int exitCode = runMain("--auto-orient", "-o", outputFile.toString(), TEST_IMG_JPG.toString());
+
+    assertThat(exitCode).isZero();
+    assertThat(outputFile).exists();
+
+    try (XWPFDocument doc = new XWPFDocument(Files.newInputStream(outputFile))) {
+      assertThat(doc.getParagraphs()).hasSize(1);
+      assertThat(doc.getParagraphs().get(0).getRuns().get(0).getEmbeddedPictures()).hasSize(1);
+    }
+  }
+
+  @Test
+  void shouldNotAutoOrientPortraitImage() throws Exception {
+    Path outputFile = tempDir.resolve("output.docx");
+    // test_img.png is portrait (height > width)
+    int exitCode = runMain("--auto-orient", "-o", outputFile.toString(), TEST_IMG_PNG.toString());
+
+    assertThat(exitCode).isZero();
+    assertThat(outputFile).exists();
+
+    try (XWPFDocument doc = new XWPFDocument(Files.newInputStream(outputFile))) {
+      assertThat(doc.getParagraphs()).hasSize(1);
+      assertThat(doc.getParagraphs().get(0).getRuns().get(0).getEmbeddedPictures()).hasSize(1);
+    }
+  }
+
+  @Test
+  void shouldNotAutoOrientWhenDisabled() throws Exception {
+    Path outputFile = tempDir.resolve("output.docx");
+    // test_img2.jpg is landscape but auto-orient is disabled by default
+    int exitCode = runMain("-o", outputFile.toString(), TEST_IMG_JPG.toString());
+
+    assertThat(exitCode).isZero();
+    assertThat(outputFile).exists();
+
+    try (XWPFDocument doc = new XWPFDocument(Files.newInputStream(outputFile))) {
+      assertThat(doc.getParagraphs()).hasSize(1);
+      assertThat(doc.getParagraphs().get(0).getRuns().get(0).getEmbeddedPictures()).hasSize(1);
+    }
+  }
+
+  @Test
+  void shouldAutoOrientWithFitToPage() throws Exception {
+    Path outputFile = tempDir.resolve("output.docx");
+    // Combine auto-orient with fit-to-page
+    int exitCode = runMain("--auto-orient", "--fit-to-page", "-o", outputFile.toString(), TEST_IMG_JPG.toString());
+
+    assertThat(exitCode).isZero();
+    assertThat(outputFile).exists();
+
+    try (XWPFDocument doc = new XWPFDocument(Files.newInputStream(outputFile))) {
+      assertThat(doc.getParagraphs()).hasSize(1);
+      assertThat(doc.getParagraphs().get(0).getRuns().get(0).getEmbeddedPictures()).hasSize(1);
+    }
+  }
+
   private int runMain(String... args) {
     return commandLine.execute(args);
   }
