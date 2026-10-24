@@ -173,7 +173,7 @@ public class Main implements Callable<Integer> {
     List<File> fileList = Arrays.asList(files);
     switch (sortOrder) {
       case NAME:
-        fileList.sort(Comparator.comparing(File::getName));
+        fileList.sort(Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER));
         break;
       case DATE:
         fileList.sort(Comparator.comparingLong(File::lastModified));
